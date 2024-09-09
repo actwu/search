@@ -4,6 +4,7 @@
 <script setup>
 setSEO("Search"); setViewport(); ui();
 </script>
+
 <body>
 <cont bar row top tbdr="0" bbg> 
   <i v class="fa-solid fa-magnifying-glass"></i>
@@ -53,47 +54,14 @@ const searchWikipedia = async () => {
 };
 
 const formatText = (text) => {
-  const lines = text.split('\n');
   const fragment = document.createDocumentFragment();
-  let ul = null;
-  let ol = null;
+  const paragraphs = text.split(/\n\n+/); // Split by double newlines for paragraphs
 
-  lines.forEach(line => {
-    if (line.match(/^\d+\./)) {
-      if (!ol) {
-        ol = document.createElement('ol');
-      }
-      const li = document.createElement('li');
-      li.textContent = line;
-      ol.appendChild(li);
-    } else if (line.startsWith('•')) {
-      if (!ul) {
-        ul = document.createElement('ul');
-      }
-      const li = document.createElement('li');
-      li.textContent = line;
-      ul.appendChild(li);
-    } else {
-      if (ul) {
-        fragment.appendChild(ul);
-        ul = null;
-      }
-      if (ol) {
-        fragment.appendChild(ol);
-        ol = null;
-      }
-      const p = document.createElement('p');
-      p.textContent = line;
-      fragment.appendChild(p);
-    }
+  paragraphs.forEach(paragraph => {
+    const p = document.createElement('p');
+    p.textContent = paragraph;
+    fragment.appendChild(p);
   });
-
-  if (ul) {
-    fragment.appendChild(ul);
-  }
-  if (ol) {
-    fragment.appendChild(ol);
-  }
 
   return fragment;
 };
