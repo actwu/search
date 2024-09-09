@@ -5,8 +5,8 @@
 setSEO("Search"); setViewport(); ui();
 </script>
 <body>
-<cont bar top none tbr="0" bbg> <p> Search </p> </cont>
-  <cont small none></cont>
+<cont bar top tbr="0" bbg> <p>Search</p> </cont>
+<cont small none></cont>
 <cont bar bottom none bbg bbdr="0" fixed>
 <textarea id="searchInput" placeholder="Enter your query"></textarea>
 <a onmousedown="searchWikipedia()">
@@ -14,125 +14,86 @@ setSEO("Search"); setViewport(); ui();
 </a>
 </cont>
   
-<cont scroll big id="result"></cont>
-
+<cont scroll none big id="result"></cont>
 
 <script>
-
 const searchWikipedia = async () => {
-
   const query = document.getElementById('searchInput').value;
-
   const url = `https://en.wikipedia.org/w/api.php?action=query&format=json&prop=extracts&titles=${encodeURIComponent(query)}&exintro&explaintext&origin=*`;
 
   try {
-
     const response = await fetch(url);
-
     const data = await response.json();
-
-    
-
     const pages = data.query.pages;
-
     const resultContainer = document.getElementById('result');
 
-
-
-    
-
     while (resultContainer.firstChild) {
-
       resultContainer.removeChild(resultContainer.firstChild);
-
     }
 
     for (const pageId in pages) {
-
       const page = pages[pageId];
-
       if (page.extract) {
-
         const div = document.createElement('div');
-
         const h3 = document.createElement('h3');
-
-        const p = document.createElement('p');
+        const formattedText = formatText(page.extract);
 
         h3.textContent = page.title;
-
-        p.textContent = page.extract;
-
-
         div.appendChild(h3);
-
-        div.appendChild(formatText(page.extract));
-
+        div.appendChild(formattedText);
         resultContainer.appendChild(div);
-
       }
-
     }
-
   } catch (error) {
-
     console.error('Error:', error);
-
   }
-
 };
 
 const formatText = (text) => {
-
   const lines = text.split('\n');
-
   const fragment = document.createDocumentFragment();
+  let ul = null;
+  let ol = null;
 
   lines.forEach(line => {
-
     if (line.match(/^\d+\./)) {
-
-
-
-      const ol = document.createElement('ol');
-
+      if (!ol) {
+        ol = document.createElement('ol');
+      }
       const li = document.createElement('li');
-
       li.textContent = line;
-
       ol.appendChild(li);
-
-      fragment.appendChild(ol);
-
     } else if (line.startsWith('•')) {
-
-      const ul = document.createElement('ul');
-
+      if (!ul) {
+        ul = document.createElement('ul');
+      }
       const li = document.createElement('li');
-
       li.textContent = line;
-
-
       ul.appendChild(li);
-
-      fragment.appendChild(ul);
-
     } else {
-
+      if (ul) {
+        fragment.appendChild(ul);
+        ul = null;
+      }
+      if (ol) {
+        fragment.appendChild(ol);
+        ol = null;
+      }
       const p = document.createElement('p');
-
       p.textContent = line;
-
       fragment.appendChild(p);
-
     }
-
   });
 
+  if (ul) {
+    fragment.appendChild(ul);
+  }
+  if (ol) {
+    fragment.appendChild(ol);
+  }
+
   return fragment;
-
 };
-
 </script>
 
 </body>
